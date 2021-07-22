@@ -15,7 +15,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.P10_GettingMyLocationsEnhanced">
-        <activity android:name=".CheckRecords"></activity>
+        <service
+            android:name=".MyService2"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity android:name=".CheckRecords" />
 
         <service
             android:name=".MyService"
