@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
     FusedLocationProviderClient client;
     Button btnStartDetector, btnStopDetector, btnCheckRecords, btnMusic;
     TextView tvLatitude, tvLongitude;
+    LocationRequest mLocationRequest;
+    LocationCallback mLocationCallBack;
+
+    String folderLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +54,29 @@ public class MainActivity extends AppCompatActivity {
         btnMusic = findViewById(R.id.btnMusic);
         tvLatitude = findViewById(R.id.tvLatitude);
         tvLongitude = findViewById(R.id.tvLongitude);
+        client = LocationServices.getFusedLocationProviderClient(MainActivity.this);
 
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(3000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setSmallestDisplacement(100);
+
+        mLocationCallBack = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null) {
+                    Location data = locationResult.getLastLocation();
+                    double lat = data.getLatitude();
+                    double lng = data.getLongitude();
+                    tvLatitude.setText("Latitude: " + lat);
+                    tvLongitude.setText("Longitude: " + lng);
+                    Toast.makeText(MainActivity.this, "Location Update Successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "failed to receive location", Toast.LENGTH_SHORT).show();
+                }
+            };
+        };
 
         if (checkPermission() == true) {
             Task<Location> task = client.getLastLocation();
@@ -72,12 +98,21 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},0);
         }
 
+        //Folder creation for Internal Storage
+        folderLocation = getFilesDir().getAbsolutePath() + "/MyFolder";
+        File folder = new File(folderLocation);
+        if (folder.exists() == false){
+            boolean result = folder.mkdir();
+            if (result = true){
+                Log.d("File Read/Write", "Folder created");
+            }
+        }
 
         // Zoom the map, get current location, place marker
         FragmentManager fm = getSupportFragmentManager();
         SupportMapFragment mapFragment = (SupportMapFragment)
                 fm.findFragmentById(R.id.map);
-        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
+
 
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -101,13 +136,34 @@ public class MainActivity extends AppCompatActivity {
         btnStartDetector.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startService(new Intent(MainActivity.this, MyService2.class));
+                if (checkPermission() == true){
+//                    Toast.makeText(MainActivity.this, "Check permission successfully", Toast.LENGTH_SHORT).show();
+                    client.requestLocationUpdates(mLocationRequest, mLocationCallBack, null);
+                    if (folder.exists() == true){
+                        try {
+                            folderLocation = getFilesDir().getAbsolutePath() + "/MyFolder";
+                            File targetFile_I = new File(folderLocation, "data.txt");
+                            FileWriter writer_I = new FileWriter(targetFile_I, true);
+                            writer_I.write(tvLatitude.getText().toString() + ", " + tvLongitude.getText().toString()+ "\n");
+                            writer_I.flush();
+                            writer_I.close();
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Failed to write!", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }else {
+                    Toast.makeText(MainActivity.this, "Check Permission failed", Toast.LENGTH_SHORT).show();
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},0);
+//                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0);
+                }
             }
         });
         btnStopDetector.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopService(new Intent(MainActivity.this, MyService2.class));
+                client.removeLocationUpdates(mLocationCallBack);
+                Toast.makeText(MainActivity.this, "Remove Location Update Successfully", Toast.LENGTH_SHORT).show();
             }
         });
 

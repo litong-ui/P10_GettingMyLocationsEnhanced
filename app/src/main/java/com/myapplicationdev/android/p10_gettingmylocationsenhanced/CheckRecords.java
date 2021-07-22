@@ -98,29 +98,55 @@ public class CheckRecords extends AppCompatActivity {
         lvRecords.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String favRecords = alRecords.get(i);
+                String favRecord = alRecords.get(i);
 
-                AlertDialog.Builder myBuilder = new AlertDialog.Builder(getApplicationContext());
-                myBuilder.setMessage("Add this location in your favorite list?");
-                myBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        try {
-                            folderLocation = getFilesDir().getAbsolutePath() + "/MyFolder";
-                            File targetFile_I = new File(folderLocation, "favourites.txt");
-                            FileWriter writer_I = new FileWriter(targetFile_I, true);
-                            writer_I.write(favRecords + "\n");
-                            writer_I.flush();
-                            writer_I.close();
-                        } catch (Exception e){
-                            Toast.makeText(getApplicationContext(), "Failed to write!", Toast.LENGTH_LONG).show();
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                myBuilder.setNegativeButton("No", null);
-                AlertDialog myDialog = myBuilder.create();
-                myDialog.show();
+//                AlertDialog.Builder myBuilder = new AlertDialog.Builder(CheckRecords.this);
+//                myBuilder.setMessage("Add this location in your favorite list?");
+//                myBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int i) {
+//                        try {
+//                            folderLocation = getFilesDir().getAbsolutePath() + "/MyFolder";
+//                            File targetFile_I = new File(folderLocation, "favourites.txt");
+//                            FileWriter writer_I = new FileWriter(targetFile_I, true);
+//                            writer_I.write(favRecords + "\n");
+//                            writer_I.flush();
+//                            writer_I.close();
+//                        } catch (Exception e){
+//                            Toast.makeText(getApplicationContext(), "Failed to write!", Toast.LENGTH_LONG).show();
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//                myBuilder.setNegativeButton("No", null);
+//                AlertDialog myDialog = myBuilder.create();
+//                myDialog.show();
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(CheckRecords.this);
+                builder.setMessage("Add this location in your favourite list?")
+                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                try {
+                                    folderLocation = getFilesDir().getAbsolutePath() + "/MyFolder";
+                                    File targetFile_I = new File(folderLocation, "favourites.txt");
+                                    FileWriter writer_I = new FileWriter(targetFile_I, true);
+                                    writer_I.write(favRecord + "\n");
+                                    writer_I.flush();
+                                    writer_I.close();
+                                } catch (Exception e){
+                                    Toast.makeText(getApplicationContext(), "Failed to write!", Toast.LENGTH_LONG).show();
+                                    e.printStackTrace();
+                                }
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                            }
+                        });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         });
 
